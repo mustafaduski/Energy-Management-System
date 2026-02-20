@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>سیستەمی ئیکۆ - دهۆک</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; background: #f4f4f4; text-align: center; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        input { width: 80%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
+        button { background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        .result { margin-top: 20px; font-weight: bold; font-size: 1.2em; }
+        .status { padding: 10px; border-radius: 5px; margin-top: 10px; }
+        .safe { background: #d4edda; color: #155724; } /* ئاستی هەرزان */
+        .warning { background: #fff3cd; color: #856404; } /* ئاستی ناوەند */
+        .danger { background: #f8d7da; color: #721c24; } /* ئاستی زۆر گران */
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>سیستەمی ئیکۆ (Eco)</h2>
+    <p>بڕی یەکەی سەر پێوەرەکە (kWh) بنووسە:</p>
+    <input type="number" id="units" placeholder="بۆ نموونە: 1600">
+    <br>
+    <button onclick="calculate()">هەژمارکردن</button>
+
+    <div id="output" class="result"></div>
+    <div id="statusBox" class="status" style="display:none;"></div>
+</div>
+
+<script>
+    function calculate() {
+        let units = document.getElementById('units').value;
+        let price = 0;
+        let statusText = "";
+        let statusClass = "";
+
+        if (units <= 1500) {
+            price = units * 18;
+            statusText = "ئاستی ١: زۆر باشە! نرخەکە هەرزانە (١٨ دینار).";
+            statusClass = "safe";
+        } else if (units <= 3000) {
+            price = (1500 * 18) + ((units - 1500) * 42);
+            statusText = "ئاستی ٢: ئاگاداربە! نرخەکە بووە بە ٤٢ دینار.";
+            statusClass = "warning";
+        } else {
+            price = (1500 * 18) + (1500 * 42) + ((units - 3000) * 180);
+            statusText = "ئاستی سوور: مەترسیدارە! نرخەکە بووە بە ١٨٠ دینار!";
+            statusClass = "danger";
+        }
+
+        document.getElementById('output').innerHTML = "تێچووی خەمڵێنراو: " + price.toLocaleString() + " دینار";
+        let sBox = document.getElementById('statusBox');
+        sBox.style.display = "block";
+        sBox.innerHTML = statusText;
+        sBox.className = "status " + statusClass;
+    }
+</script>
+
+</body>
+</html>
