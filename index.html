@@ -2,58 +2,163 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>سیستەمی ئیکۆ - دهۆک</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سیستەمی ئیکۆ - کارەبای کوردستان</title>
     <style>
-        body { font-family: Tahoma, sans-serif; background: #f4f4f4; text-align: center; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
-        input { width: 80%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
-        button { background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
-        .result { margin-top: 20px; font-weight: bold; font-size: 1.2em; }
-        .status { padding: 10px; border-radius: 5px; margin-top: 10px; }
-        .safe { background: #d4edda; color: #155724; } /* ئاستی هەرزان */
-        .warning { background: #fff3cd; color: #856404; } /* ئاستی ناوەند */
-        .danger { background: #f8d7da; color: #721c24; } /* ئاستی زۆر گران */
+        :root {
+            --primary-color: #2ecc71;
+            --secondary-color: #34495e;
+            --danger-color: #e74c3c;
+            --bg-color: #f0f3f5;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--secondary-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            width: 90%;
+            max-width: 450px;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        h1 { color: var(--primary-color); margin-bottom: 5px; }
+        p.subtitle { font-size: 0.9rem; color: #7f8c8d; margin-bottom: 25px; }
+
+        .input-group { text-align: right; margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary-color); outline: none; }
+
+        button {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .result-card {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 15px;
+            background: #f8f9fa;
+            display: none;
+            border-right: 6px solid var(--primary-color);
+        }
+
+        .price { font-size: 2rem; font-weight: bold; color: var(--secondary-color); }
+        .currency { font-size: 1rem; }
+        .advice { margin-top: 15px; font-size: 0.95rem; line-height: 1.5; }
+        
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .safe { background: #d4edda; color: #155724; }
+        .warning { background: #fff3cd; color: #856404; border-right-color: #f1c40f; }
+        .danger { background: #f8d7da; color: #721c24; border-right-color: var(--danger-color); }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>سیستەمی ئیکۆ (Eco)</h2>
-    <p>بڕی یەکەی سەر پێوەرەکە (kWh) بنووسە:</p>
-    <input type="number" id="units" placeholder="بۆ نموونە: 1600">
-    <br>
-    <button onclick="calculate()">هەژمارکردن</button>
+<div class="container">
+    <h1>سیستەمی ئیکۆ 🌿</h1>
+    <p class="subtitle">چاودێری و کۆنترۆڵی کارەبای کوردستان</p>
 
-    <div id="output" class="result"></div>
-    <div id="statusBox" class="status" style="display:none;"></div>
+    <div class="input-group">
+        <label>کۆی یەکەکان (kWh):</label>
+        <input type="number" id="units" placeholder="ژمارەی سەر پێوەرەکە بنووسە">
+    </div>
+
+    <div class="input-group">
+        <label>بودجەی مانگانەت (دینار):</label>
+        <input type="number" id="budget" value="50000">
+    </div>
+
+    <button onclick="ecoCalculate()">هەژمارکردنی تێچوو</button>
+
+    <div id="resultCard" class="result-card">
+        <div id="priceLabel" class="price">0</div>
+        <div class="currency">دیناری عێراقی</div>
+        <div id="badgeLabel" class="badge">ئاستی ١</div>
+        <div id="adviceLabel" class="advice"></div>
+    </div>
 </div>
 
 <script>
-    function calculate() {
-        let units = document.getElementById('units').value;
-        let price = 0;
-        let statusText = "";
-        let statusClass = "";
-
-        if (units <= 1500) {
-            price = units * 18;
-            statusText = "ئاستی ١: زۆر باشە! نرخەکە هەرزانە (١٨ دینار).";
-            statusClass = "safe";
-        } else if (units <= 3000) {
-            price = (1500 * 18) + ((units - 1500) * 42);
-            statusText = "ئاستی ٢: ئاگاداربە! نرخەکە بووە بە ٤٢ دینار.";
-            statusClass = "warning";
-        } else {
-            price = (1500 * 18) + (1500 * 42) + ((units - 3000) * 180);
-            statusText = "ئاستی سوور: مەترسیدارە! نرخەکە بووە بە ١٨٠ دینار!";
-            statusClass = "danger";
+    function ecoCalculate() {
+        const units = parseFloat(document.getElementById('units').value);
+        const budget = parseFloat(document.getElementById('budget').value);
+        const resultCard = document.getElementById('resultCard');
+        
+        if (isNaN(units) || units < 0) {
+            alert("تکایە ژمارەیەکی دروست بنووسە");
+            return;
         }
 
-        document.getElementById('output').innerHTML = "تێچووی خەمڵێنراو: " + price.toLocaleString() + " دینار";
-        let sBox = document.getElementById('statusBox');
-        sBox.style.display = "block";
-        sBox.innerHTML = statusText;
-        sBox.className = "status " + statusClass;
+        let cost = 0;
+        let status = "";
+        let advice = "";
+        let badgeClass = "";
+
+        // هاوکێشەی پلەبەندی کارەبای کوردستان
+        if (units <= 1500) {
+            cost = units * 18;
+            status = "ئاستی یەکەم (هەرزان)";
+            badgeClass = "safe";
+            advice = "بارودۆخت زۆر باشە! لەم ئاستەدا بمێنیتەوە پسوولەکەت کەم دێتەوە.";
+        } else if (units <= 3000) {
+            cost = (1500 * 18) + ((units - 1500) * 42);
+            status = "ئاستی دووەم (مامناوەند)";
+            badgeClass = "warning";
+            advice = "خەریکە لە هێڵی سەوز دەردەچیت. هەوڵ بدە سەخانی کارەبا کەمتر بەکاربهێنیت.";
+        } else {
+            cost = (1500 * 18) + (1500 * 42) + ((units - 3000) * 180);
+            status = "ئاستی سوور (زۆر گران)";
+            badgeClass = "danger";
+            advice = "ئاگاداربە! ئێستا هەر یەکەیەک بە ١٨٠ دینارە. پێویستە دەستبەجێ سپلیتەکان بکوژێنیتەوە!";
+        }
+
+        // پشکنینی بودجە
+        if (cost > budget) {
+            advice += "<br><strong style='color:red;'>⚠️ تێچووەکەت لە بودجەی دیاریکراوت تێپەڕی!</strong>";
+        }
+
+        document.getElementById('priceLabel').innerText = Math.round(cost).toLocaleString();
+        document.getElementById('badgeLabel').innerText = status;
+        document.getElementById('badgeLabel').className = "badge " + badgeClass;
+        document.getElementById('adviceLabel').innerHTML = advice;
+        
+        resultCard.style.display = "block";
+        resultCard.style.borderRightColor = getComputedStyle(document.documentElement).getPropertyValue(badgeClass === 'danger' ? '--danger-color' : badgeClass === 'warning' ? '--primary-color' : '--primary-color');
     }
 </script>
 
